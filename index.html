@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>SonoRestore AI</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+
+        <header>
+
+            <div class="badge">
+                AI-POWERED ULTRASOUND RESTORATION
+            </div>
+
+            <h1>
+                SonoRestore <span>AI</span>
+            </h1>
+
+            <p class="subtitle">
+                Intelligent Restoration of Degraded Ultrasound Images
+            </p>
+
+            <p class="description">
+                Restore degraded ultrasound images using a lightweight
+                deep-learning model while preserving important anatomical
+                structures.
+            </p>
+
+        </header>
+
+
+        <!-- UPLOAD SECTION -->
+
+        <section class="upload-section">
+
+            <h2>Upload Ultrasound Image</h2>
+
+            <p>
+                Upload a grayscale or RGB ultrasound image to begin.
+            </p>
+
+            <div class="upload-box">
+
+                <input
+                    type="file"
+                    id="imageInput"
+                    accept="image/*"
+                >
+
+                <label for="imageInput" class="upload-button">
+                    📁 Choose Image
+                </label>
+
+                <p id="fileName">
+                    No image selected
+                </p>
+
+            </div>
+
+            <button
+                id="restoreButton"
+                class="restore-button"
+                disabled
+            >
+                ✨ Restore Image
+            </button>
+
+            <p id="status">
+                Loading AI model...
+            </p>
+
+        </section>
+
+
+        <!-- RESULTS -->
+
+        <section
+            id="resultsSection"
+            class="results-section hidden"
+        >
+
+            <h2>Restoration Results</h2>
+
+            <div class="image-grid">
+
+                <div class="image-card">
+
+                    <h3>Original / Degraded</h3>
+
+                    <div class="image-container">
+                        <img id="originalImage">
+                    </div>
+
+                    <p>
+                        Input image
+                    </p>
+
+                </div>
+
+
+                <div class="image-card">
+
+                    <h3>Traditional — Bicubic</h3>
+
+                    <div class="image-container">
+                        <img id="bicubicImage">
+                    </div>
+
+                    <p>
+                        Classical interpolation baseline
+                    </p>
+
+                </div>
+
+
+                <div class="image-card ai-card">
+
+                    <div class="ai-label">
+                        AI RESTORATION
+                    </div>
+
+                    <h3>SonoRestore AI</h3>
+
+                    <div class="image-container">
+                        <img id="restoredImage">
+                    </div>
+
+                    <p>
+                        Deep-learning restoration
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- METRICS -->
+
+<!-- =========================================================
+     MODEL PERFORMANCE — FULL TEST SET
+     ========================================================= -->
+<!-- MODEL INFORMATION -->
+
+<section class="model-info">
+
+    <h2>🔬 SonoRestore AI — Model Information</h2>
+
+    <p class="model-info-subtitle">
+        Lightweight deep-learning architecture designed for efficient
+        ultrasound image restoration.
+    </p>
+
+    <div class="model-info-grid">
+
+        <div class="info-item">
+            <span class="info-label">Architecture</span>
+            <strong>Lightweight CNN</strong>
+        </div>
+
+        <div class="info-item">
+            <span class="info-label">Input</span>
+            <strong>128 × 128 × 1</strong>
+        </div>
+
+        <div class="info-item">
+            <span class="info-label">Output</span>
+            <strong>256 × 256 × 1</strong>
+        </div>
+
+        <div class="info-item">
+            <span class="info-label">Parameters</span>
+            <strong>222,209</strong>
+        </div>
+
+        <div class="info-item">
+            <span class="info-label">Inference</span>
+            <strong>ONNX Runtime Web</strong>
+        </div>
+
+        <div class="info-item">
+            <span class="info-label">Execution</span>
+            <strong>Browser-side AI</strong>
+        </div>
+
+    </div>
+
+</section>
+<div class="metrics">
+
+    <div class="metrics-header">
+        <h2>Model Performance — Full Test Set (117 Images)</h2>
+
+        <p class="metrics-subtitle">
+            Average performance evaluated on 117 unseen test images.
+            Higher PSNR and SSIM indicate better restoration,
+            while lower MSE indicates better accuracy.
+        </p>
+    </div>
+
+
+    <!-- METRIC CARDS -->
+
+    
+
+        <!-- MSE -->
+
+        <div class="metric-card">
+
+            <h3>MSE</h3>
+
+            <div class="metric-values">
+
+                <div>
+                    <span>Traditional — Bicubic</span>
+                    <strong id="mseTraditional">0.002923</strong>
+                </div>
+
+                <div class="ai-value">
+                    <span>SonoRestore AI</span>
+                    <strong id="mseAI">0.001474</strong>
+                </div>
+
+            </div>
+
+            <p class="metric-description">
+                Lower is better
+            </p>
+
+        </div>
+
+
+        <!-- PSNR -->
+
+        <div class="metric-card">
+
+            <h3>PSNR</h3>
+
+            <div class="metric-values">
+
+                <div>
+                    <span>Traditional — Bicubic</span>
+                    <strong id="psnrTraditional">25.61 dB</strong>
+                </div>
+
+                <div class="ai-value">
+                    <span>SonoRestore AI</span>
+                    <strong id="psnrAI">28.51 dB</strong>
+                </div>
+
+            </div>
+
+            <p class="metric-description">
+                Higher is better
+            </p>
+
+        </div>
+
+
+        <!-- SSIM -->
+
+        <div class="metric-card">
+
+            <h3>SSIM</h3>
+
+            <div class="metric-values">
+
+                <div>
+                    <span>Traditional — Bicubic</span>
+                    <strong id="ssimTraditional">0.7274</strong>
+                </div>
+
+                <div class="ai-value">
+                    <span>SonoRestore AI</span>
+                    <strong id="ssimAI">0.8042</strong>
+                </div>
+
+            </div>
+
+            <p class="metric-description">
+                Higher is better
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- IMPROVEMENT -->
+
+    <div class="improvement-banner">
+
+        <h3>SonoRestore AI Improvement</h3>
+
+        <div class="improvement-grid">
+
+            <div>
+                <strong>49.58%</strong>
+                <span>MSE Reduction</span>
+            </div>
+
+            <div>
+                <strong>+2.90 dB</strong>
+                <span>PSNR Increase</span>
+            </div>
+
+            <div>
+                <strong>+10.55%</strong>
+                <span>SSIM Increase</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- WHY SONORESTORE AI -->
+
+<section class="why-section">
+
+    <h2>Why SonoRestore AI?</h2>
+
+    <p class="why-intro">
+        Our lightweight deep-learning model improves degraded ultrasound
+        images while aiming to preserve important anatomical structures.
+    </p>
+
+    <div class="why-grid">
+
+        <div class="why-card">
+
+            <div class="why-icon">🔍</div>
+
+            <h3>Better Visibility</h3>
+
+            <p>
+                Reduces degradation and enhances visual clarity
+                compared with traditional bicubic interpolation.
+            </p>
+
+        </div>
+
+
+        <div class="why-card">
+
+            <div class="why-icon">🧠</div>
+
+            <h3>AI-Based Restoration</h3>
+
+            <p>
+                A lightweight convolutional neural network learns
+                how to reconstruct higher-resolution ultrasound images.
+            </p>
+
+        </div>
+
+
+        <div class="why-card">
+
+            <div class="why-icon">⚡</div>
+
+            <h3>Lightweight Model</h3>
+
+            <p>
+                The deployed model contains only 222,209 parameters,
+                making it suitable for an efficient prototype.
+            </p>
+
+        </div>
+
+
+        <div class="why-card">
+
+            <div class="why-icon">💻</div>
+
+            <h3>Low-Cost Technology</h3>
+
+            <p>
+                Built using Python, PyTorch, OpenCV and ONNX with
+                free and open-source development tools.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+        <!-- MSE -->
+        <div class="metric-card">
+
+            <h3>MSE</h3>
+
+            <div class="metric-values">
+
+                <div>
+                    <span>Traditional — Bicubic</span>
+                    <strong id="mseTraditional">
+                        0.002923
+                    </strong>
+                </div>
+
+                <div>
+                    <span>SonoRestore AI</span>
+                    <strong id="mseAI">
+                        0.001474
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PSNR -->
+        <div class="metric-card">
+
+            <h3>PSNR</h3>
+
+            <div class="metric-values">
+
+                <div>
+                    <span>Traditional — Bicubic</span>
+                    <strong id="psnrTraditional">
+                        25.61 dB
+                    </strong>
+                </div>
+
+                <div>
+                    <span>SonoRestore AI</span>
+                    <strong id="psnrAI">
+                        28.51 dB
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SSIM -->
+        <div class="metric-card">
+
+            <h3>SSIM</h3>
+
+            <div class="metric-values">
+
+                <div>
+                    <span>Traditional — Bicubic</span>
+                    <strong id="ssimTraditional">
+                        0.7274
+                    </strong>
+                </div>
+
+                <div>
+                    <span>SonoRestore AI</span>
+                    <strong id="ssimAI">
+                        0.8042
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+            <!-- METRICS -->
+
+           <!-- <div class="metrics">
+
+                <h2>Performance Comparison</h2>
+
+                <div class="metric-grid">
+
+                    <div class="metric-card">
+
+                        <h3>MSE</h3>
+
+                        <div class="metric-values">
+
+                            <div>
+                                <span>Traditional</span>
+                                <strong id="mseTraditional">
+                                    —
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>SonoRestore AI</span>
+                                <strong id="mseAI">
+                                    —
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="metric-card">
+
+                        <h3>PSNR</h3>
+
+                        <div class="metric-values">
+
+                            <div>
+                                <span>Traditional</span>
+                                <strong id="psnrTraditional">
+                                    —
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>SonoRestore AI</span>
+                                <strong id="psnrAI">
+                                    —
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="metric-card">
+
+                        <h3>SSIM</h3>
+
+                        <div class="metric-values">
+
+                            <div>
+                                <span>Traditional</span>
+                                <strong id="ssimTraditional">
+                                    —
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>SonoRestore AI</span>
+                                <strong id="ssimAI">
+                                    —
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div> -->
+                 
+
+                <!-- IMPROVEMENT -->
+
+                <div class="improvement">
+
+                    <h3>
+                        SonoRestore AI Improvement
+                    </h3>
+
+                    <div class="improvement-grid">
+
+                        <div>
+                            <strong>
+                                49.58%
+                            </strong>
+
+                            <span>
+                                MSE Reduction
+                            </span>
+                        </div>
+
+                        <div>
+                            <strong>
+                                +2.90 dB
+                            </strong>
+
+                            <span>
+                                PSNR Increase
+                            </span>
+                        </div>
+
+                        <div>
+                            <strong>
+                                +10.55%
+                            </strong>
+
+                            <span>
+                                SSIM Increase
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- DOWNLOAD -->
+
+            <button
+                id="downloadButton"
+                class="download-button"
+            >
+                ⬇ Download Restored Image
+            </button>
+
+        </section>
+
+
+        <!-- FOOTER -->
+
+        <footer>
+
+            <p>
+                SonoRestore AI — Hackathon Prototype
+            </p>
+
+            <p class="disclaimer">
+                Research prototype for image restoration and visualization.
+                Not intended for medical diagnosis.
+            </p>
+
+        </footer>
+
+    </div>
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
